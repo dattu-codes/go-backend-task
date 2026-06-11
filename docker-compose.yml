@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # DB Service running PostgreSQL 15 on Alpine
+  db:
+    image: postgres:15-alpine
+    container_name: userdb_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: userdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Healthcheck to prevent app from starting before database is fully initialized
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d userdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Backend Web Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go_user_api
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      // In Docker network, connection points to 'db' container host
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/userdb?sslmode=disable
+      - LOG_LEVEL=info
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
