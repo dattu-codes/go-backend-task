@@ -2,7 +2,6 @@
 
 A premium, production-ready REST API built in Go for managing users, structured using Clean Architecture principles (Handler, Service, Repository, Database).
 
-This project was developed for the **Ainyx Solutions Intern (Backend)** selection task.
 
 ---
 
